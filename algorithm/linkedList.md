@@ -75,7 +75,7 @@ append(key, value){
 ```
 while문을 모두 통과하면 node 는 null이 돼버리고, 마지막 노드에서 꼭 새로운 노드를 추가해줘야 하는 추가 함수의 경우... WTH...
 
-따라서 node의 next가 null이 아닐때까지 while문을 실행해야 한다. 하지만... 코드가 좀 더 복잡해진다.
+따라서 node의 next가 null이 아닐때까지 while문을 실행해야 한다. 하지만... 코드가 깔끔하지 않다...
 ```
 append(key, value){
   let node = this.head;
@@ -84,14 +84,83 @@ append(key, value){
   if (node === null) {
     this.head = newNode;
   } else {
-    while(node.next !== null){
+    while(node.next !== null){ // 위의 코드에서 node !== null에서 node.next !== null 로 수정됨
       if(node.key === key){
         node.value = value;
         return
       }
       node = node.next;
     }
+    if(node.key === key){
+      node.value = value;
+      return
+    }
     node.next = newNode;
   }
 }
+```
+자 이렇게 코드를 짜면 node가 마지막일 때 즉 node.next가 null 값을 가질 때 while을 빠져나가므로 key값을 비교할 수 없다.
+그래서 마지막에 다시한번 if문으로 비교해야한다.
+아래는 중복코드를 줄이기 위한 발악으로 탄생한 결과이나... 썩 만족스럽지는 않다.
+```
+append(key, value){
+  let newNode = new Node(key, value);
+  let node = this.head;
+  if( node === null ) {
+      this.head = newNode;
+  } else {
+    while(true){
+        if(node.key === key){
+            node.value = value;
+            return
+        } else {
+            if(node.next === null){
+                break
+            }
+            node = node.next;
+        }
+    }
+    node.next = newNode;
+  }
 }
+```
+### 1.3. 삭제 닌이도(중하...)
+삭제메소드 구현시 고려해야할 점
+
+1. head값 삭제
+2. 그 이후 노드 삭제
+
+이렇게 두 가지로 생각해 볼 수 있다. 중복을 고려한 append에 비해서는..? 쉽다.
+```
+let node = this.head;
+if (node === null) {
+  return false
+} else if (node.key === key) {
+  // head를 삭제해야 하는 경우
+  this.head = this.head.next  
+} else {
+  while(node.next !== null) {
+    if (node.next.key === key) {
+      node.next = node.next.next;
+      break;
+    } else {
+      node = node.next;
+    }
+  }
+}
+```
+삭제의 경우 key에 해당하는 node의 이전 node와 해당하는 node의 다음 node를 연결해주면 된다. 다음과 같이 말이다. 
+```
+1 -> 2 -> 3
+
+     2
+1 ------->3
+```
+여기서 한가지 의문이 생길 수 있다. 삭제메서드에서도 node.next !== null 일 때 까지 while문이 실행되는데 마지막 노드는 실행이 안되고 결국 삭제도 못하지 않나?? => X 
+
+위의 코드 중 node.next.key === key 를 봐 보자. while문 내에서는 node.next가 삭제될 대상이다. 
+node가 마지막 전 노드 일 때, node.next를 통해 마지막 노드의 key 값을 확인할 것이다.
+즉 마지막 전 노드에서 이미 마지막 노드를 확인하여 key값이 같으면 마지막 전노드의 next로 null을 덮어 씌울 것이기 때문에 마지막 노드는 삭제 될 것이다.
+
+## 느낀점
+연결리스트를 어디에 써먹을 수 있을까... 곰곰이 생각해보는 중이다.
