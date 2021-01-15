@@ -87,17 +87,23 @@ hashing(key) { // 아스키코드 값을 모두 더해 해시값을 만들어 �
   }
   return hash
 }
-convertToIndex(hash){
+convertToIndex(hash){ // hash 값을 size로 나눈 나머지를 index로 반환한다.
   return hash % this.size
 }
-put(key){
+```
+헤시테이블 입력은 --------------------------
+```
+put(key, value){
   const hash = this.hashing(key);
   const index = this.converToIndex(hash);
   const list = this.data[index];
   if(list === undifined){
-    this.data[index] = new LinkedList(key, 1);
-  } else if(list.search(key)
+    this.data[index] = new LinkedList(key, value);
+  } else if (!list.search(key)) {
+  
+  }
 }
+```
 get(key){
   const hash = this.hashing(key);
   const index = this.convertToIndex(hash):
