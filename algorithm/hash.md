@@ -1,6 +1,6 @@
 # hash table
 최근 문제해결능력을 향상시키기 위해(사실은 취직이 목적이지만 ㅎ)
-코팅테스트 문제를 풀고있다. 프*그래*머스라는 곳에서 "완주하지 못한 선수"라는 제목부터 매우 흥미로운 늬양스를 풍기고 있어 이 문제를 풀어보았는데 쉬운 수준임에도 제대로 풀지못하는 나의 수준을 보며 이대로는 안되겠다 싶어 이제는 알고리즘과 자료구조를 공부하려고한다. 단순히 공부하고 지나치는게 아니라 코드를 구현해보고 원리를 파악해서 실무에서도 사용할 수 있는 능력을 갖추는 것이 최종 목표이다. 
+코팅테스트 문제를 풀고있다. 프&#45;그래&#45;머스라는 곳에서 "완주하지 못한 선수"라는 제목부터 매우 흥미로운 늬양스를 풍기고 있어 이 문제를 풀어보았는데 쉬운 수준임에도 제대로 풀지못하는 나의 수준을 보며 이대로는 안되겠다 싶어 이제는 알고리즘과 자료구조를 공부하려고한다. 단순히 공부하고 지나치는게 아니라 코드를 구현해보고 원리를 파악해서 실무에서도 사용할 수 있는 능력을 갖추는 것이 최종 목표이다. 
 
 
 ## why is hash table fast?
@@ -91,30 +91,59 @@ convertToIndex(hash){ // hash 값을 size로 나눈 나머지를 index로 반환
   return hash % this.size
 }
 ```
-헤시테이블 입력은 --------------------------
+입력은 3가지 경우로 생각해 볼 수 있다.
+1. bucket이 null인 경우 => 새로운 LinkedList 생성 및 저장
+2. bucket에 LinkedList가 이미 존재하고 그 안에 key값에 해당하는 자료가 없는 경우. => LinkedList의 append 메소드로 데이터 연결
+3. bucket에 LinkedList가 이미 존재하고 그 안에 key값에 해당하는 자료가 이미 있는 경우 => append 메서드로 데이터 수정
 ```
 put(key, value){
   const hash = this.hashing(key);
   const index = this.converToIndex(hash);
   const list = this.data[index];
-  if(list === undifined){
+  if(list === undifined){ // 1
     this.data[index] = new LinkedList(key, value);
-  } else if (!list.search(key)) {
-  
+  } else { //2,3
+    list.append(key,value)
   }
 }
+```
+get 메소드를 구현할 때 생각해 봐야할 점은 put과 비슷하다. LinkedList 내의 search 메소드로 노드를 검색해서 반환받은 node의 value를 구해야하기 때문에 search 메소드를 사용하기 위해 LindedList가 우선 있는지 확인할 필요가 있다.
 ```
 get(key){
   const hash = this.hashing(key);
   const index = this.convertToIndex(hash):
-  const value = this.data[index];
+  const list = this.data[index];
+  if (list === undifined) {
+    return false
+  } else if(!list.search(key)){
+    return false
+  } else { 
+    return list.search(key).value
+  }
 }
 ```
+삭제 메소드
+```
+delete(key){
+  const hash = this.hashing(key);
+  const index = this.convertToIndex(hash);
+  const list = this.data[index];
+  if (list === undifined) {
+    return false;
+  } else {
+    list.delete(key);
+  }
+  if (list && !list.head) {
+    delete this.data[index];
+  }
+}
+```
+최종 HashTable 클래스 코드
 ```
 class HashTable{
   constructor(size){
     this.data = [];
-    if (size) {z
+    if (size) {
       this.size = size;;
     } else {
       this.size = 100;
@@ -137,14 +166,14 @@ class HashTable{
     const hash = this.hashing(key);
     const index = this.convertToIndex(hash);
     const list = this.data[index];
-    if (list === undefined){
+    if (list === undefined) {
       // if that particular table index is undefined, linked-list is not exist,
       // therefore there is no key assgined.
       return false;
-    } else if (list.search(key) === false){
+    } else if (list.search(key) === false) {
       // the value doesn't exist in the linked-list
       return false;
-    } else{
+    } else {
       return list.search(key).value;
     }
   }
@@ -167,8 +196,10 @@ class HashTable{
     }
     if (list && !list.head) {
       delete this.data[index];
-
     }
   }
 }
 ```
+
+### 느낀점
+지금까지 자료구조에 대한 중요성을 인지하지 못했다. 나도 모르게 내 마음속에서 컴퓨터 하드웨어의 발전으로 자료구조는 사실상 크게 중요하지 않은 이론상의 전유물이 되었다고 생각해온 것 같다. 해시테이블을 공부하면서 적절한 자료구조를 때에 맞게 사용하면 성능면에서 완전히 다른 결과물이 된다는 것을 보고 그 생각이 완전히 뒤바꼈다. 지금이라도 자료구조의 중요성을 알고 활용할수 있게 생각을 달리하는 자세를 깨우쳐서 다행이라고 생각한다. + 어디에 쓰일지 생각해보면 DNS와 같은 Dotain to IP 1:1 매칭 구조에서 뿐만아니라 이 자료구조의 특성인 중복데이터를 확인하기 쉽다는 점을 활용할수 있는 곳이면 매우 요긴하게 쓰일 듯 하다.
